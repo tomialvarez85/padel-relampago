@@ -10,7 +10,7 @@
     "dev": "cd frontend && npm run dev",
     "build": "cd frontend && npm run build",
     "preview": "cd frontend && npm run preview",
-    "install:all": "npm install && cd frontend && npm install"
+    "install:all": "npm install"
   },
   "keywords": ["padel", "tournaments", "react", "typescript", "vercel"],
   "author": "Pádel Relámpago",

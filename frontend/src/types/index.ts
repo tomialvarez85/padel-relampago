@@ -29,6 +29,72 @@ export interface User {
   updatedAt: string;
 }
 
+// Team types (parejas)
+export interface Team {
+  id: string;
+  name: string;
+  player1: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+  };
+  player2: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+  };
+  torneoId: string;
+  groupId?: string;
+  groupPosition?: number;
+  isEliminated?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Group types
+export interface Group {
+  id: string;
+  name: string;
+  torneoId: string;
+  teams: Team[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Match types
+export interface Match {
+  id: string;
+  torneoId: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  homeScore: number;
+  awayScore: number;
+  status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'WALKOVER';
+  scheduledAt?: string;
+  startedAt?: string;
+  endedAt?: string;
+  round: number; // 1: Groups, 2: Quarter Finals, 3: Semi Finals, 4: Final
+  matchNumber: number;
+  groupId?: string; // For group matches
+  bracketId?: string; // For elimination matches
+  winnerId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Bracket types
+export interface Bracket {
+  id: string;
+  name: string;
+  torneoId: string;
+  round: number;
+  matches: Match[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Tournament types
 export interface Torneo {
   id: string;
@@ -42,24 +108,13 @@ export interface Torneo {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
-  creator?: User;
-  _count?: {
-    teams: number;
-    matches: number;
-  };
-}
-
-export interface TorneoWithDetails extends Torneo {
-  creator: User;
-  teams: TeamWithDetails[];
-  matches: MatchWithDetails[];
-  brackets: Bracket[];
   _count: {
     teams: number;
     matches: number;
   };
 }
 
+// Request types
 export interface CreateTorneoRequest {
   name: string;
   description?: string;
@@ -79,107 +134,56 @@ export interface UpdateTorneoRequest {
   format?: 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' | 'ROUND_ROBIN' | 'SWISS_SYSTEM';
 }
 
-// Team types
-export interface Team {
-  id: string;
-  name: string;
-  torneoId: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PlayerTeam {
-  id: string;
-  playerId: string;
-  teamId: string;
-  isCaptain: boolean;
-  createdAt: string;
-  player?: User;
-  team?: Team;
-}
-
-export interface TeamWithDetails extends Team {
-  torneo: Torneo;
-  playerTeams: (PlayerTeam & {
-    player: User;
-  })[];
-  homeMatches: Match[];
-  awayMatches: Match[];
-}
-
 export interface CreateTeamRequest {
   name: string;
-  playerIds: string[];
-  captainId?: string;
+  player1: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+  };
+  player2: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+  };
+  torneoId: string;
 }
 
 export interface UpdateTeamRequest {
   name?: string;
-  playerIds?: string[];
-  captainId?: string;
+  player1?: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+  };
+  player2?: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+  };
+  groupId?: string;
+  groupPosition?: number;
 }
 
-// Match types
-export interface Match {
-  id: string;
-  torneoId: string;
-  homeTeamId: string;
-  awayTeamId: string;
-  homeScore: number;
-  awayScore: number;
-  status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'WALKOVER';
-  scheduledAt?: string;
-  startedAt?: string;
-  endedAt?: string;
-  refereeId?: string;
-  bracketId?: string;
-  round: number;
-  matchNumber: number;
-  createdAt: string;
-  updatedAt: string;
+export interface CreateUserRequest {
+  email: string;
+  password?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  role?: 'ADMIN' | 'PLAYER' | 'REFEREE';
 }
 
-export interface MatchWithDetails extends Match {
-  torneo: Torneo;
-  homeTeam: TeamWithDetails;
-  awayTeam: TeamWithDetails;
-  referee?: User;
-  bracket?: Bracket;
-}
-
-export interface CreateMatchRequest {
-  homeTeamId: string;
-  awayTeamId: string;
-  scheduledAt?: string;
-  refereeId?: string;
-  round: number;
-  matchNumber: number;
-  bracketId?: string;
-}
-
-export interface UpdateMatchRequest {
-  homeScore?: number;
-  awayScore?: number;
-  status?: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'WALKOVER';
-  scheduledAt?: string;
-  startedAt?: string;
-  endedAt?: string;
-  refereeId?: string;
-}
-
-// Bracket types
-export interface Bracket {
-  id: string;
-  torneoId: string;
-  name: string;
-  type: 'MAIN' | 'CONSOLATION' | 'FINAL';
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateBracketRequest {
-  name: string;
-  type?: 'MAIN' | 'CONSOLATION' | 'FINAL';
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  role?: 'ADMIN' | 'PLAYER' | 'REFEREE';
+  isActive?: boolean;
 }
 
 // Statistics types
@@ -191,26 +195,18 @@ export interface TorneoStats {
   completionPercentage: number;
 }
 
-export interface PlayerStats {
-  playerId: string;
-  player: User;
-  matchesPlayed: number;
-  matchesWon: number;
-  matchesLost: number;
-  winPercentage: number;
-  totalGamesWon: number;
-  totalGamesLost: number;
+// Tournament configuration
+export interface TournamentConfig {
+  numberOfGroups: number;
+  teamsPerGroup: number;
+  teamsAdvancingPerGroup: number;
 }
 
-export interface TeamStats {
-  teamId: string;
-  team: Team;
-  matchesPlayed: number;
-  matchesWon: number;
-  matchesLost: number;
-  winPercentage: number;
-  totalGamesWon: number;
-  totalGamesLost: number;
+// Bracket generation result
+export interface BracketGenerationResult {
+  groups: Group[];
+  brackets: Bracket[];
+  matches: Match[];
 }
 
 // UI Component types
